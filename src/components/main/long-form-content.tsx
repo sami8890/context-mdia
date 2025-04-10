@@ -304,7 +304,7 @@ const VideoModal = ({
                                         whileTap={{ scale: 0.95 }}
                                         onClick={(e) => {
                                             e.stopPropagation()
-                                            onPrevious && onPrevious()
+                                            if (onPrevious) onPrevious()
                                         }}
                                         className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-colors"
                                         aria-label="Previous video"
@@ -321,7 +321,7 @@ const VideoModal = ({
                                         whileTap={{ scale: 0.95 }}
                                         onClick={(e) => {
                                             e.stopPropagation()
-                                            onNext && onNext()
+                                            if (onNext) onNext()
                                         }}
                                         className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-colors"
                                         aria-label="Next video"
@@ -574,7 +574,7 @@ export default function LongFormContent() {
     const controls = useAnimation()
     const [scrollPosition, setScrollPosition] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
-    const [isMobile, setIsMobile] = useState(false)
+    const [, setIsMobile] = useState(false)
 
     // State for selected video and modal
     const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)

@@ -428,12 +428,6 @@ export default function VideoTestimonials() {
         }
     }, [controls, inView])
 
-    const handleObserver = (items: IntersectionObserverEntry[]) => {
-        const target = items[0]
-        if (target.isIntersecting) {
-            // setPage((prev) => prev + 1);
-        }
-    }
 
     return (
         <section className="relative w-full py-20 md:py-32 px-4 md:px-8 lg:px-16 bg-[#0c0c0c] overflow-hidden" ref={ref}>

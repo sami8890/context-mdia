@@ -12,17 +12,33 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#0c0c0c] overflow-x-hidden">
       <Navbar />
-      <Hero/>
-      <Testimonials />
-      <ServicesSection/>
-      <div id="work">
+
+      <section id="hero">
+        <Hero />
+      </section>
+
+      <section id="testimonial">
+        <Testimonials />
+      </section>
+
+      <section id="services">
+        <ServicesSection />
+      </section>
+
+      <section id="work">
         <ShortFormContent />
         <YoutubeThumbnails />
-      </div>
-      <LongFormContent />
-      <BookCallSection/>
+      </section>
+
+      <section id="case-studies">
+        <LongFormContent />
+      </section>
+
+      <section id="contact">
+        <BookCallSection />
+      </section>
+
       <Footer />
     </main>
-  )
+  );
 }
-

@@ -83,7 +83,7 @@ export default function BookCallSection() {
                                 <div>
                                     <h3 className="text-white text-lg font-medium mb-1">30-minute strategy session</h3>
                                     <p className="text-gray-400">
-                                        We'll discuss your goals, challenges, and create a tailored plan for your content.
+                                        We&apos;ll discuss your goals, challenges, and create a tailored plan for your content.
                                     </p>
                                 </div>
                             </div>
@@ -94,7 +94,7 @@ export default function BookCallSection() {
                                 </div>
                                 <div>
                                     <h3 className="text-white text-lg font-medium mb-1">Video conference details</h3>
-                                    <p className="text-gray-400">You'll receive all meeting details immediately after booking.</p>
+                                    <p className="text-gray-400">You&apos;ll receive all meeting details immediately after booking.</p>
                                 </div>
                             </div>
                         </div>

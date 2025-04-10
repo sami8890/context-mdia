@@ -271,7 +271,7 @@ export default function Navbar() {
                           We help you go viral with our expertise
                         </h3>
                         <p className="text-gray-300 text-base mb-6 max-w-xl">
-                          Book the call with us and get a free consultation on your business. We'll help you turn your
+                          Book the call with us and get a free consultation on your business. We&apos;ll help you turn your
                           content into paying customers on autopilot.
                         </p>
 
