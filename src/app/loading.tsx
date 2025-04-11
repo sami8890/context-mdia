@@ -70,7 +70,7 @@ export default function ContextMediaLoader() {
 
             <div className="logo-container">
                 <div className="logo">
-                    <span className="context">Context</span><span className="media">Media</span>
+                    <span className="contex">Contex</span><span className="media">Media</span>
                 </div>
 
                 <div className="progress-container">

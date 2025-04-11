@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect, useState, useCallback } from "react"
 import { motion, useAnimation, useInView, AnimatePresence } from "framer-motion"
 import {
     Play,
@@ -15,6 +15,11 @@ import {
     Info,
     Clock,
     Tag,
+    Loader2,
+    Youtube,
+    SkipBack,
+    SkipForward,
+    List,
 } from "lucide-react"
 import Image from "next/image"
 
@@ -24,7 +29,6 @@ interface Video {
     videoId: string
     label: string
     category: string
-    thumbnail?: string
     duration?: string
     description?: string
 }
@@ -33,29 +37,26 @@ interface Video {
 const longFormVideos: Video[] = [
     {
         title: "24/7 ACCESS WITH ME",
-        videoId: "dQw4w9WgXcQ",
+        videoId: "lEeV1Sa7wjo",
         label: "Featured",
         category: "Tutorials",
-        thumbnail: "/image.png",
         duration: "12:45",
         description:
             "Get exclusive access to premium content and behind-the-scenes footage in this comprehensive tutorial series.",
     },
     {
         title: "With Everything",
-        videoId: "dQw4w9WgXcQ",
+        videoId: "LWijamQNckM",
         label: "New",
         category: "Interviews",
-        thumbnail: "/image.png",
         duration: "18:30",
         description: "An in-depth interview exploring creative processes and professional insights from industry experts.",
     },
     {
         title: "JOB SEARCH REVIEW",
-        videoId: "dQw4w9WgXcQ",
+        videoId: "5GL5oCrDxdI",
         label: "Popular",
         category: "Career",
-        thumbnail: "/image.png",
         duration: "22:15",
         description:
             "Learn effective strategies for job searching and resume building with practical examples and expert advice.",
@@ -63,29 +64,26 @@ const longFormVideos: Video[] = [
     // Duplicate videos to create a continuous marquee effect
     {
         title: "24/7 ACCESS WITH ME",
-        videoId: "dQw4w9WgXcQ",
+        videoId: "lEeV1Sa7wjo",
         label: "Featured",
         category: "Tutorials",
-        thumbnail: "/image.png",
         duration: "12:45",
         description:
             "Get exclusive access to premium content and behind-the-scenes footage in this comprehensive tutorial series.",
     },
     {
         title: "With Everything",
-        videoId: "dQw4w9WgXcQ",
+        videoId: "LWijamQNckM",
         label: "New",
         category: "Interviews",
-        thumbnail: "/image.png",
         duration: "18:30",
         description: "An in-depth interview exploring creative processes and professional insights from industry experts.",
     },
     {
         title: "JOB SEARCH REVIEW",
-        videoId: "dQw4w9WgXcQ",
+        videoId: "5GL5oCrDxdI",
         label: "Popular",
         category: "Career",
-        thumbnail: "/image.png",
         duration: "22:15",
         description:
             "Learn effective strategies for job searching and resume building with practical examples and expert advice.",
@@ -101,6 +99,8 @@ const VideoModal = ({
     onPrevious,
     hasNext,
     hasPrevious,
+    onJumpTo,
+    allVideos,
 }: {
     video: Video | null
     isOpen: boolean
@@ -109,11 +109,16 @@ const VideoModal = ({
     onPrevious?: () => void
     hasNext?: boolean
     hasPrevious?: boolean
+    onJumpTo?: (index: number) => void
+    allVideos?: Video[]
 }) => {
     const [isMuted, setIsMuted] = useState(false)
     const [isFullscreen, setIsFullscreen] = useState(false)
     const [showInfo, setShowInfo] = useState(false)
+    const [showVideoList, setShowVideoList] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
     const modalRef = useRef<HTMLDivElement>(null)
+    const iframeRef = useRef<HTMLIFrameElement>(null)
     const [isMobile, setIsMobile] = useState(false)
 
     // Check if device is mobile
@@ -129,6 +134,18 @@ const VideoModal = ({
             window.removeEventListener("resize", checkMobile)
         }
     }, [])
+
+    // Handle iframe load event
+    const handleIframeLoad = () => {
+        setIsLoading(false)
+    }
+
+    // Reset loading state when video changes
+    useEffect(() => {
+        if (video) {
+            setIsLoading(true)
+        }
+    }, [video])
 
     // Toggle fullscreen
     const toggleFullscreen = () => {
@@ -185,6 +202,10 @@ const VideoModal = ({
         const handleArrowKeys = (e: KeyboardEvent) => {
             if (e.key === "ArrowRight" && onNext && hasNext) onNext()
             if (e.key === "ArrowLeft" && onPrevious && hasPrevious) onPrevious()
+            if (e.key === "m") setIsMuted(!isMuted)
+            if (e.key === "f") toggleFullscreen()
+            if (e.key === "i") setShowInfo(!showInfo)
+            if (e.key === "l") setShowVideoList(!showVideoList)
         }
 
         window.addEventListener("keydown", handleEsc)
@@ -194,7 +215,7 @@ const VideoModal = ({
             window.removeEventListener("keydown", handleEsc)
             window.removeEventListener("keydown", handleArrowKeys)
         }
-    }, [onClose, onNext, onPrevious, hasNext, hasPrevious])
+    }, [onClose, onNext, onPrevious, hasNext, hasPrevious, isMuted, showInfo, showVideoList])
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -231,6 +252,9 @@ const VideoModal = ({
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-sm"
                     onClick={onClose}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="video-modal-title"
                 >
                     <motion.div
                         ref={modalRef}
@@ -241,27 +265,52 @@ const VideoModal = ({
                         className="relative w-full max-w-7xl aspect-video bg-black rounded-lg overflow-hidden shadow-2xl border border-white/10"
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {/* Loading indicator */}
+                        {isLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+                                <div className="flex flex-col items-center gap-4">
+                                    <Loader2 className="h-12 w-12 text-[#ff6b3d] animate-spin" />
+                                    <p className="text-white text-sm">Loading video...</p>
+                                </div>
+                            </div>
+                        )}
+
                         <iframe
+                            ref={iframeRef}
                             src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0&modestbranding=1&playsinline=1&showinfo=0&color=white`}
                             title={video.title}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                             className="w-full h-full"
                             frameBorder="0"
                             allowFullScreen
+                            onLoad={handleIframeLoad}
+                            id="video-player-iframe"
                         ></iframe>
 
                         {/* Enhanced controls overlay with better mobile support */}
                         <div className="absolute inset-0 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-between pointer-events-none">
                             {/* Top controls */}
                             <div className="p-2 sm:p-4 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center pointer-events-auto">
-                                <h3 className="text-white text-sm sm:text-lg font-bold truncate max-w-[50%] sm:max-w-md">
+                                <h3
+                                    id="video-modal-title"
+                                    className="text-white text-sm sm:text-lg font-bold truncate max-w-[50%] sm:max-w-md"
+                                >
                                     {video.title}
                                 </h3>
                                 <div className="flex gap-1 sm:gap-2">
                                     <button
+                                        onClick={() => setShowVideoList(!showVideoList)}
+                                        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
+                                        aria-label="Show video list"
+                                        title="Show video list (l)"
+                                    >
+                                        <List size={isMobile ? 16 : 18} />
+                                    </button>
+                                    <button
                                         onClick={() => setShowInfo(!showInfo)}
                                         className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
                                         aria-label="Show info"
+                                        title="Show info (i)"
                                     >
                                         <Info size={isMobile ? 16 : 18} />
                                     </button>
@@ -269,6 +318,7 @@ const VideoModal = ({
                                         onClick={handleShare}
                                         className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
                                         aria-label="Share"
+                                        title="Share video"
                                     >
                                         <Share2 size={isMobile ? 16 : 18} />
                                     </button>
@@ -276,6 +326,7 @@ const VideoModal = ({
                                         onClick={() => setIsMuted(!isMuted)}
                                         className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
                                         aria-label={isMuted ? "Unmute" : "Mute"}
+                                        title={isMuted ? "Unmute (m)" : "Mute (m)"}
                                     >
                                         {isMuted ? <VolumeX size={isMobile ? 16 : 18} /> : <Volume2 size={isMobile ? 16 : 18} />}
                                     </button>
@@ -283,6 +334,7 @@ const VideoModal = ({
                                         onClick={toggleFullscreen}
                                         className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
                                         aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                                        title={isFullscreen ? "Exit Fullscreen (f)" : "Enter Fullscreen (f)"}
                                     >
                                         {isFullscreen ? <Minimize size={isMobile ? 16 : 18} /> : <Maximize size={isMobile ? 16 : 18} />}
                                     </button>
@@ -290,6 +342,7 @@ const VideoModal = ({
                                         onClick={onClose}
                                         className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
                                         aria-label="Close"
+                                        title="Close (Esc)"
                                     >
                                         <X size={isMobile ? 16 : 18} />
                                     </button>
@@ -308,6 +361,7 @@ const VideoModal = ({
                                         }}
                                         className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-colors"
                                         aria-label="Previous video"
+                                        title="Previous video (←)"
                                     >
                                         <ChevronLeft size={isMobile ? 20 : 24} />
                                     </motion.button>
@@ -325,6 +379,7 @@ const VideoModal = ({
                                         }}
                                         className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-colors"
                                         aria-label="Next video"
+                                        title="Next video (→)"
                                     >
                                         <ChevronRight size={isMobile ? 20 : 24} />
                                     </motion.button>
@@ -342,6 +397,9 @@ const VideoModal = ({
                                             <Clock size={12} className="inline" />
                                             {video.duration}
                                         </span>
+                                    </div>
+                                    <div className="text-xs text-gray-400 hidden sm:block">
+                                        Keyboard shortcuts: ← → (navigation), m (mute), f (fullscreen), i (info), l (list)
                                     </div>
                                 </div>
                             </div>
@@ -379,8 +437,92 @@ const VideoModal = ({
                                             <span className="bg-white/10 px-2 py-1 rounded text-xs font-medium text-white">
                                                 {video.label}
                                             </span>
+                                            <a
+                                                href={`https://www.youtube.com/watch?v=${video.videoId}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-1 bg-red-600 px-2 py-1 rounded text-xs font-medium text-white hover:bg-red-700 transition-colors"
+                                            >
+                                                <Youtube size={12} />
+                                                Watch on YouTube
+                                            </a>
                                         </div>
                                         <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{video.description}</p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Video list panel */}
+                        <AnimatePresence>
+                            {showVideoList && allVideos && allVideos.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="absolute inset-y-0 left-0 w-full sm:w-72 md:w-80 bg-black/90 p-4 overflow-auto pointer-events-auto"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-white text-lg font-bold">All Videos</h3>
+                                        <button
+                                            onClick={() => setShowVideoList(false)}
+                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-black/60 text-white hover:bg-[#ff6b3d]/80 transition-colors"
+                                            aria-label="Close video list"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+
+                                    <div className="grid gap-3">
+                                        {allVideos.map((v, idx) => {
+                                            // Only show unique videos (filter out duplicates)
+                                            const isFirstOccurrence =
+                                                allVideos.findIndex((video) => video.videoId === v.videoId && video.title === v.title) === idx
+
+                                            if (!isFirstOccurrence) return null
+
+                                            const isActive = v.videoId === video.videoId && v.title === video.title
+
+                                            return (
+                                                <div
+                                                    key={`list-${idx}`}
+                                                    className={`p-2 rounded cursor-pointer transition-all duration-200 ${isActive
+                                                            ? "bg-[#ff6b3d]/20 border-l-4 border-[#ff6b3d]"
+                                                            : "hover:bg-white/5 border-l-4 border-transparent"
+                                                        }`}
+                                                    onClick={() => {
+                                                        if (onJumpTo) {
+                                                            onJumpTo(idx)
+                                                            setShowVideoList(false)
+                                                        }
+                                                    }}
+                                                >
+                                                    <div className="flex gap-3 items-center">
+                                                        <div
+                                                            className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? "bg-[#ff6b3d]" : "bg-white/10"
+                                                                }`}
+                                                        >
+                                                            {isActive ? (
+                                                                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                                                            ) : (
+                                                                <span className="text-xs text-white">{idx + 1}</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h4 className="text-white text-sm font-medium truncate">{v.title}</h4>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <span className="text-xs text-gray-400">{v.category}</span>
+                                                                <span className="text-xs text-gray-400 flex items-center">
+                                                                    <Clock size={10} className="mr-1" />
+                                                                    {v.duration}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
                                     </div>
                                 </motion.div>
                             )}
@@ -406,7 +548,8 @@ const VideoCard = ({
     const [isTouched, setIsTouched] = useState(false)
     const cardRef = useRef<HTMLDivElement>(null)
     const isInView = useInView(cardRef, { once: true, amount: 0.3 })
-    const [isMobile, setIsMobile] = useState(false)
+    const [, setIsMobile] = useState(false)
+    const [isActive, ] = useState(false)
 
     // Handle touch events for mobile
     useEffect(() => {
@@ -468,6 +611,29 @@ const VideoCard = ({
         }
     }, [])
 
+    // Generate a gradient background based on the video ID
+    const getGradientBackground = (videoId: string) => {
+        // Use the last character of the video ID to determine the gradient
+        const lastChar = videoId.charAt(videoId.length - 1)
+        const colorNum = Number.parseInt(lastChar, 16) || 0
+
+        // Create different gradients based on the number
+        switch (colorNum % 5) {
+            case 0:
+                return "bg-gradient-to-br from-[#1a1a2e] to-[#16213e]"
+            case 1:
+                return "bg-gradient-to-br from-[#0f0e17] to-[#232946]"
+            case 2:
+                return "bg-gradient-to-br from-[#2d3748] to-[#1a202c]"
+            case 3:
+                return "bg-gradient-to-br from-[#3d5a80] to-[#293241]"
+            case 4:
+                return "bg-gradient-to-br from-[#2b2d42] to-[#1b1b2f]"
+            default:
+                return "bg-gradient-to-br from-gray-900 to-gray-800"
+        }
+    }
+
     return (
         <motion.div
             ref={cardRef}
@@ -482,31 +648,41 @@ const VideoCard = ({
             <div
                 className="relative aspect-[16/10] overflow-hidden rounded-lg cursor-pointer shadow-lg transition-all duration-300 hover:shadow-xl hover:shadow-[#ff6b3d]/20 group"
                 onClick={() => onVideoSelect(video)}
+                role="button"
+                aria-label={`Play ${video.title}`}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        onVideoSelect(video)
+                    }
+                }}
             >
-                {/* Thumbnail with loading state */}
-                <div className="absolute inset-0 bg-gray-900">
+                {/* Video thumbnail preview using YouTube thumbnail */}
+                <div className="absolute inset-0">
                     <Image
-                        src={video.thumbnail || `/image.png`}
+                        src={`https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`}
                         alt={video.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                        className={`object-cover transition-transform duration-700 ${isHovered || isTouched ? "scale-110" : "scale-100"}`}
-                        loading="eager"
+                        width={1280}
+                        height={720}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => {
+                            // Fallback to gradient background if image fails to load
+                            e.currentTarget.style.display = "none"
+                            e.currentTarget.parentElement?.classList.add(getGradientBackground(video.videoId))
+                        }}
                     />
-                </div>
 
-                {/* Overlay with improved gradient */}
-                <div
-                    className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 ${isHovered || isTouched ? "opacity-90" : "opacity-100"
-                        }`}
-                ></div>
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+                </div>
 
                 {/* Animated play button */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{
-                        opacity: isHovered || isTouched ? 1 : 0,
-                        scale: isHovered || isTouched ? 1 : 0.8,
+                        opacity: isHovered || isTouched ? 1 : 0.7, // Make slightly visible even when not hovered
+                        scale: isHovered || isTouched ? 1 : 0.9,
                     }}
                     transition={{ duration: 0.3 }}
                     className="absolute inset-0 flex items-center justify-center"
@@ -527,14 +703,6 @@ const VideoCard = ({
                     </div>
                     <div className="px-2 sm:px-3 py-0.5 sm:py-1 bg-[#ff6b3d]/90 rounded-full text-[10px] sm:text-xs font-medium text-white shadow-sm">
                         {video.category}
-                    </div>
-                </div>
-
-                {/* Duration badge with icon */}
-                <div className="absolute top-3 sm:top-5 right-3 sm:right-5">
-                    <div className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-black/70 backdrop-blur-md rounded-full text-[10px] sm:text-xs font-medium text-white flex items-center gap-1 shadow-sm">
-                        <Clock size={isMobile ? 10 : 12} />
-                        {video.duration}
                     </div>
                 </div>
 
@@ -562,11 +730,15 @@ const VideoCard = ({
                     className={`absolute inset-0 border-2 border-[#ff6b3d]/0 rounded-lg transition-all duration-300 ${isHovered || isTouched ? "border-[#ff6b3d]/70" : ""
                         }`}
                 ></div>
+                {isActive && (
+                    <div className="absolute inset-0 border-4 border-[#ff6b3d] rounded-lg z-10 pointer-events-none"></div>
+                )}
             </div>
         </motion.div>
     )
 }
 
+// Performance optimizations for the main component
 export default function LongFormContent() {
     const ref = useRef<HTMLElement>(null)
     const marqueeRef = useRef<HTMLDivElement>(null)
@@ -574,93 +746,129 @@ export default function LongFormContent() {
     const controls = useAnimation()
     const [scrollPosition, setScrollPosition] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
-    const [, setIsMobile] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
+    const [isReducedMotion, setIsReducedMotion] = useState(false)
+    const [activeVideoIndex, setActiveVideoIndex] = useState(0)
+    const [showControls, setShowControls] = useState(false)
 
     // State for selected video and modal
     const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
     const [selectedVideoIndex, setSelectedVideoIndex] = useState<number>(-1)
     const [isModalOpen, setIsModalOpen] = useState(false)
 
-    // Check if device is mobile
+    // Get unique videos (filter out duplicates)
+    const uniqueVideos = longFormVideos.filter((video, index) => {
+        return longFormVideos.findIndex((v) => v.videoId === video.videoId && v.title === video.title) === index
+    })
+
+    // Check for reduced motion preference
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+        setIsReducedMotion(mediaQuery.matches)
+
+        const handleChange = () => {
+            setIsReducedMotion(mediaQuery.matches)
+        }
+
+        mediaQuery.addEventListener("change", handleChange)
+        return () => {
+            mediaQuery.removeEventListener("change", handleChange)
+        }
+    }, [])
+
+    // Check if device is mobile - with cleanup
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth < 768)
         }
 
         checkMobile()
-        window.addEventListener("resize", checkMobile)
+        const resizeHandler = () => {
+            // Debounce resize event
+            if (window.requestAnimationFrame) {
+                window.requestAnimationFrame(checkMobile)
+            } else {
+                checkMobile()
+            }
+        }
+
+        window.addEventListener("resize", resizeHandler)
 
         return () => {
-            window.removeEventListener("resize", checkMobile)
+            window.removeEventListener("resize", resizeHandler)
         }
     }, [])
 
     // Handle video selection
-    const handleVideoSelect = (video: Video) => {
+    const handleVideoSelect = useCallback((video: Video) => {
         const index = longFormVideos.findIndex((v) => v.videoId === video.videoId && v.title === video.title)
         setSelectedVideo(video)
         setSelectedVideoIndex(index)
         setIsModalOpen(true)
-    }
+    }, [])
 
-    // Navigation handlers
-    const handleNextVideo = () => {
+    // Navigation handlers - memoized
+    const handleNextVideo = useCallback(() => {
         if (selectedVideoIndex < longFormVideos.length - 1) {
             const nextVideo = longFormVideos[selectedVideoIndex + 1]
             setSelectedVideo(nextVideo)
             setSelectedVideoIndex(selectedVideoIndex + 1)
         }
-    }
+    }, [selectedVideoIndex])
 
-    const handlePreviousVideo = () => {
+    const handlePreviousVideo = useCallback(() => {
         if (selectedVideoIndex > 0) {
             const prevVideo = longFormVideos[selectedVideoIndex - 1]
             setSelectedVideo(prevVideo)
             setSelectedVideoIndex(selectedVideoIndex - 1)
         }
-    }
+    }, [selectedVideoIndex])
 
-    // Close modal
-    const handleCloseModal = () => {
+    // Jump to specific video index
+    const handleJumpToVideo = useCallback((index: number) => {
+        if (index >= 0 && index < longFormVideos.length) {
+            const video = longFormVideos[index]
+            setSelectedVideo(video)
+            setSelectedVideoIndex(index)
+        }
+    }, [])
+
+    // Close modal - memoized
+    const handleCloseModal = useCallback(() => {
         setIsModalOpen(false)
         // Optional: delay clearing the selected video to allow for exit animation
         setTimeout(() => setSelectedVideo(null), 300)
-    }
+    }, [])
 
-    // Animation for main content
+    // Animation for main content - optimized
     useEffect(() => {
         if (inView) {
             controls.start("visible")
-        } else {
-            controls.start("hidden")
         }
     }, [controls, inView])
 
-    // Marquee animation from right to left with increased speed
+    // Optimized marquee animation with respect for reduced motion preferences
     useEffect(() => {
-        if (!marqueeRef.current || isPaused) return
+        if (!marqueeRef.current || isPaused || isReducedMotion) return
 
         let animationId: number
         let lastTimestamp: number
 
         const animate = (timestamp: number) => {
             if (!lastTimestamp) lastTimestamp = timestamp
-            const elapsed = timestamp - lastTimestamp
 
-            if (elapsed > 16) {
-                // ~60fps
-                lastTimestamp = timestamp
-                setScrollPosition((prev) => {
-                    // Move from right to left with increased speed (2.5x faster)
-                    const newPosition = prev + 2.5
+            // Smoother animation with requestAnimationFrame
+            lastTimestamp = timestamp
+            setScrollPosition((prev) => {
+                // Move from right to left with consistent speed
+                const newPosition = prev + 0.5 // Slower, smoother speed
 
-                    // Reset when we've scrolled far enough
-                    if (newPosition >= (marqueeRef.current?.scrollWidth || 0) / 2) {
-                        return 0
-                    }
-                    return newPosition
-                })
-            }
+                // Reset when we've scrolled far enough
+                if (newPosition >= (marqueeRef.current?.scrollWidth || 0) / 2) {
+                    return 0
+                }
+                return newPosition
+            })
 
             animationId = requestAnimationFrame(animate)
         }
@@ -670,17 +878,73 @@ export default function LongFormContent() {
         return () => {
             cancelAnimationFrame(animationId)
         }
-    }, [isPaused])
+    }, [isPaused, isReducedMotion])
 
-    // Apply scroll position to marquee
+    // Apply scroll position to marquee with transform optimization
     useEffect(() => {
         if (marqueeRef.current) {
-            marqueeRef.current.style.transform = `translateX(-${scrollPosition}px)`
+            // Use transform3d for hardware acceleration
+            marqueeRef.current.style.transform = `translate3d(-${scrollPosition}px, 0, 0)`
         }
     }, [scrollPosition])
 
+    // Handle navigation to first video
+    const handleFirstVideo = useCallback(() => {
+        if (uniqueVideos.length > 0) {
+            handleVideoSelect(uniqueVideos[0])
+        }
+    }, [uniqueVideos, handleVideoSelect])
+
+    // Handle navigation to last video
+    const handleLastVideo = useCallback(() => {
+        if (uniqueVideos.length > 0) {
+            handleVideoSelect(uniqueVideos[uniqueVideos.length - 1])
+        }
+    }, [uniqueVideos, handleVideoSelect])
+
+    // Handle direct navigation to specific video
+    const handleNavigateToVideo = useCallback(
+        (index: number) => {
+            if (index >= 0 && index < uniqueVideos.length) {
+                setActiveVideoIndex(index)
+                // Scroll to the video if needed
+                const videoElements = document.querySelectorAll(".video-card")
+                if (videoElements && videoElements[index]) {
+                    videoElements[index].scrollIntoView({
+                        behavior: "smooth",
+                        block: "nearest",
+                        inline: "center",
+                    })
+                }
+            }
+        },
+        [uniqueVideos.length],
+    )
+
+    // Handle carousel navigation - Fixed to properly navigate
+    const handleNavigation = (direction: "prev" | "next") => {
+        if (direction === "prev") {
+            setScrollPosition((prev) => {
+                const newPosition = Math.max(0, prev - 500) // Move left by 500px
+                return newPosition
+            })
+        } else {
+            setScrollPosition((prev) => {
+                const maxScroll = (marqueeRef.current?.scrollWidth || 0) / 2
+                const newPosition = Math.min(maxScroll, prev + 500) // Move right by 500px
+                return newPosition
+            })
+        }
+    }
+
     return (
-        <section className="relative w-full py-12 sm:py-16 md:py-24 px-4 md:px-8 lg:px-16 bg-[#0c0c0c]" ref={ref}>
+        <section
+            className="relative w-full py-12 sm:py-16 md:py-24 px-4 md:px-8 lg:px-16 bg-[#0c0c0c]"
+            ref={ref}
+            aria-label="Long form content section"
+            onMouseEnter={() => setShowControls(true)}
+            onMouseLeave={() => setShowControls(false)}
+        >
             {/* Enhanced background elements with more dynamic gradients */}
             <div className="absolute inset-0 z-0 overflow-hidden">
                 <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[#ff6b3d]/5 blur-[150px] rounded-full animate-pulse"></div>
@@ -708,9 +972,13 @@ export default function LongFormContent() {
                         <span className="text-white">Long form </span>
                         <motion.span
                             className="bg-gradient-to-r from-[#ff6b3d] to-[#ff4d00] text-transparent bg-clip-text inline-block"
-                            animate={{
-                                backgroundPosition: ["0% center", "100% center", "0% center"],
-                            }}
+                            animate={
+                                isReducedMotion
+                                    ? {}
+                                    : {
+                                        backgroundPosition: ["0% center", "100% center", "0% center"],
+                                    }
+                            }
                             transition={{
                                 duration: 8,
                                 repeat: Number.POSITIVE_INFINITY,
@@ -725,6 +993,42 @@ export default function LongFormContent() {
                     </p>
                 </motion.div>
 
+                {/* Video navigation controls */}
+                <div
+                    className={`flex justify-center mb-6 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 sm:opacity-100"}`}
+                >
+                    <div className="bg-black/40 backdrop-blur-sm rounded-full p-1 flex items-center">
+                        <button
+                            onClick={handleFirstVideo}
+                            className="p-2 text-white hover:text-[#ff6b3d] transition-colors"
+                            aria-label="First video"
+                            title="First video"
+                        >
+                            <SkipBack className="w-5 h-5" />
+                        </button>
+
+                        {uniqueVideos.map((_, idx) => (
+                            <button
+                                key={`nav-${idx}`}
+                                onClick={() => handleNavigateToVideo(idx)}
+                                className={`w-2 h-2 mx-1 rounded-full transition-all duration-300 ${activeVideoIndex === idx ? "bg-[#ff6b3d] scale-125" : "bg-white/50 hover:bg-white/80"
+                                    }`}
+                                aria-label={`Go to video ${idx + 1}`}
+                                title={`Go to video ${idx + 1}`}
+                            />
+                        ))}
+
+                        <button
+                            onClick={handleLastVideo}
+                            className="p-2 text-white hover:text-[#ff6b3d] transition-colors"
+                            aria-label="Last video"
+                            title="Last video"
+                        >
+                            <SkipForward className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
                 {/* Enhanced marquee container with right-to-left animation */}
                 <div
                     className="relative overflow-hidden mb-8"
@@ -732,7 +1036,39 @@ export default function LongFormContent() {
                     onMouseLeave={() => setIsPaused(false)}
                     onTouchStart={() => setIsPaused(true)}
                     onTouchEnd={() => setIsPaused(false)}
+                    aria-label="Video carousel"
                 >
+                    {/* Enhanced navigation arrows for tablet and desktop - Fixed to properly handle click events */}
+                    {!isMobile && (
+                        <>
+                            <motion.button
+                                className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-[#ff6b3d]/80 transition-colors shadow-lg"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleNavigation("prev")
+                                }}
+                                aria-label="Previous videos"
+                                whileHover={{ scale: 1.1, boxShadow: "0 0 15px 2px rgba(255, 107, 61, 0.3)" }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <ChevronLeft className="h-6 w-6" />
+                            </motion.button>
+
+                            <motion.button
+                                className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-[#ff6b3d]/80 transition-colors shadow-lg"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleNavigation("next")
+                                }}
+                                aria-label="Next videos"
+                                whileHover={{ scale: 1.1, boxShadow: "0 0 15px 2px rgba(255, 107, 61, 0.3)" }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <ChevronRight className="h-6 w-6" />
+                            </motion.button>
+                        </>
+                    )}
+
                     {/* Enhanced gradient overlays for fade effect */}
                     <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-[#0c0c0c] to-transparent z-10"></div>
                     <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-[#0c0c0c] to-transparent z-10"></div>
@@ -745,14 +1081,14 @@ export default function LongFormContent() {
                     >
                         {/* First set of videos */}
                         {longFormVideos.slice(0, 3).map((video, index) => (
-                            <div key={`first-${index}`} className="px-4 w-[350px] sm:w-[450px] md:w-[500px]">
+                            <div key={`first-${index}`} className="px-4 w-[350px] sm:w-[450px] md:w-[500px] video-card">
                                 <VideoCard video={video} index={index} onVideoSelect={handleVideoSelect} />
                             </div>
                         ))}
 
                         {/* Duplicate set for continuous scrolling */}
                         {longFormVideos.slice(0, 3).map((video, index) => (
-                            <div key={`second-${index}`} className="px-4 w-[350px] sm:w-[450px] md:w-[500px]">
+                            <div key={`second-${index}`} className="px-4 w-[350px] sm:w-[450px] md:w-[500px] video-card">
                                 <VideoCard video={video} index={index + 3} onVideoSelect={handleVideoSelect} />
                             </div>
                         ))}
@@ -767,6 +1103,34 @@ export default function LongFormContent() {
                         {isPaused ? "Paused" : "Playing"} • Hover to pause • Touch to interact
                     </div>
                 </div>
+
+                {/* Video controls and shortcuts */}
+                <div className="mt-6 flex flex-wrap justify-center gap-3">
+                    <button
+                        onClick={handleFirstVideo}
+                        className="text-xs text-white hover:text-[#ff6b3d] transition-colors duration-300 bg-black/30 px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1"
+                    >
+                        <SkipBack className="w-3 h-3" /> First Video
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            if (uniqueVideos.length > 0) {
+                                handleVideoSelect(uniqueVideos[0])
+                            }
+                        }}
+                        className="text-xs text-white hover:text-[#ff6b3d] transition-colors duration-300 bg-black/30 px-3 py-1 rounded-full backdrop-blur-sm"
+                    >
+                        View keyboard shortcuts
+                    </button>
+
+                    <button
+                        onClick={handleLastVideo}
+                        className="text-xs text-white hover:text-[#ff6b3d] transition-colors duration-300 bg-black/30 px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1"
+                    >
+                        Last Video <SkipForward className="w-3 h-3" />
+                    </button>
+                </div>
             </div>
 
             {/* Enhanced Video Modal with navigation */}
@@ -778,6 +1142,8 @@ export default function LongFormContent() {
                 onPrevious={handlePreviousVideo}
                 hasNext={selectedVideoIndex < longFormVideos.length - 1}
                 hasPrevious={selectedVideoIndex > 0}
+                onJumpTo={handleJumpToVideo}
+                allVideos={longFormVideos}
             />
         </section>
     )

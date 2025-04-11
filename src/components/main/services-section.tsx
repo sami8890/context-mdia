@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 const services = [
     {
         number: "01",
-        title: "YouTube Videos",
+        title: "YouTube & LinkedIn videos  ",
         description: "YouTube videos made more engaging than ever for longer watch time and more subscribers.",
         icon: "/placeholder.svg?height=40&width=40",
     },

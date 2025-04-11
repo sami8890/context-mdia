@@ -68,7 +68,7 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 right-0 w-full py-4 px-4 md:px-8 lg:px-16 bg-[#0c0c0c]/90 backdrop-blur-md z-50 border-b border-gray-800/50">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="text-white text-2xl font-bold z-20">
-          <span className="text-[#ff6b3d]">Context</span>media
+          <span className="text-[#ff6b3d]">Contex  </span>Media
         </Link>
 
         {/* Desktop Navigation */}

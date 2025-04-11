@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/navbar";
 import BookCallSection from "@/components/main/calendly-link";
 import Hero from "@/components/main/hero";
 import LongFormContent from "@/components/main/long-form-content";
+import PricingSection from "@/components/main/pricing-section";
 import ServicesSection from "@/components/main/services-section";
 import ShortFormContent from "@/components/main/short-form-content";
 import Testimonials from "@/components/main/testimonials";
@@ -13,7 +14,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#0c0c0c] overflow-x-hidden">
       <Navbar />
 
-      <section id="hero">
+      <section id="hero" className="min-h-screen">
         <Hero />
       </section>
 
@@ -33,7 +34,7 @@ export default function Home() {
       <section id="case-studies">
         <LongFormContent />
       </section>
-
+  <PricingSection/>
       <section id="contact">
         <BookCallSection />
       </section>
