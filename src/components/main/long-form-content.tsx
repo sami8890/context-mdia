@@ -286,9 +286,9 @@ const VideoModal = ({
                             id="video-player-iframe"
                         ></iframe>
 
-                        {/* Enhanced controls overlay with better mobile support */}
-                        <div className="absolute inset-0 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-between pointer-events-none">
-                            {/* Top controls */}
+                        {/* Enhanced controls overlay - ALWAYS VISIBLE on larger screens */}
+                        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                            {/* Top controls - ALWAYS VISIBLE on larger screens */}
                             <div className="p-2 sm:p-4 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center pointer-events-auto">
                                 <h3
                                     id="video-modal-title"
@@ -296,54 +296,62 @@ const VideoModal = ({
                                 >
                                     {video.title}
                                 </h3>
-                                <div className="flex gap-1 sm:gap-2">
+                                <div className="flex gap-2 sm:gap-3">
+                                    {/* IMPROVED: Larger, more visible buttons with labels on larger screens */}
                                     <button
                                         onClick={() => setShowVideoList(!showVideoList)}
-                                        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
+                                        className="flex items-center justify-center rounded-lg bg-black/70 text-white hover:bg-[#ff6b3d] transition-all duration-300 px-2 py-1.5 sm:px-3 sm:py-2"
                                         aria-label="Show video list"
                                         title="Show video list (l)"
                                     >
-                                        <List size={isMobile ? 16 : 18} />
+                                        <List size={isMobile ? 16 : 20} />
+                                        <span className="ml-1.5 hidden sm:inline text-sm">List</span>
                                     </button>
                                     <button
                                         onClick={() => setShowInfo(!showInfo)}
-                                        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
+                                        className="flex items-center justify-center rounded-lg bg-black/70 text-white hover:bg-[#ff6b3d] transition-all duration-300 px-2 py-1.5 sm:px-3 sm:py-2"
                                         aria-label="Show info"
                                         title="Show info (i)"
                                     >
-                                        <Info size={isMobile ? 16 : 18} />
+                                        <Info size={isMobile ? 16 : 20} />
+                                        <span className="ml-1.5 hidden sm:inline text-sm">Info</span>
                                     </button>
                                     <button
                                         onClick={handleShare}
-                                        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
+                                        className="flex items-center justify-center rounded-lg bg-black/70 text-white hover:bg-[#ff6b3d] transition-all duration-300 px-2 py-1.5 sm:px-3 sm:py-2"
                                         aria-label="Share"
                                         title="Share video"
                                     >
-                                        <Share2 size={isMobile ? 16 : 18} />
+                                        <Share2 size={isMobile ? 16 : 20} />
+                                        <span className="ml-1.5 hidden sm:inline text-sm">Share</span>
                                     </button>
                                     <button
                                         onClick={() => setIsMuted(!isMuted)}
-                                        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
+                                        className="flex items-center justify-center rounded-lg bg-black/70 text-white hover:bg-[#ff6b3d] transition-all duration-300 px-2 py-1.5 sm:px-3 sm:py-2"
                                         aria-label={isMuted ? "Unmute" : "Mute"}
                                         title={isMuted ? "Unmute (m)" : "Mute (m)"}
                                     >
-                                        {isMuted ? <VolumeX size={isMobile ? 16 : 18} /> : <Volume2 size={isMobile ? 16 : 18} />}
+                                        {isMuted ? <VolumeX size={isMobile ? 16 : 20} /> : <Volume2 size={isMobile ? 16 : 20} />}
+                                        <span className="ml-1.5 hidden sm:inline text-sm">{isMuted ? "Unmute" : "Mute"}</span>
                                     </button>
                                     <button
                                         onClick={toggleFullscreen}
-                                        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
+                                        className="flex items-center justify-center rounded-lg bg-black/70 text-white hover:bg-[#ff6b3d] transition-all duration-300 px-2 py-1.5 sm:px-3 sm:py-2"
                                         aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
                                         title={isFullscreen ? "Exit Fullscreen (f)" : "Enter Fullscreen (f)"}
                                     >
-                                        {isFullscreen ? <Minimize size={isMobile ? 16 : 18} /> : <Maximize size={isMobile ? 16 : 18} />}
+                                        {isFullscreen ? <Minimize size={isMobile ? 16 : 20} /> : <Maximize size={isMobile ? 16 : 20} />}
+                                        <span className="ml-1.5 hidden sm:inline text-sm">{isFullscreen ? "Exit" : "Full"}</span>
                                     </button>
+                                    {/* IMPROVED: Close button is now more prominent */}
                                     <button
                                         onClick={onClose}
-                                        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-[#ff6b3d]/80 transition-all duration-300 hover:scale-105"
+                                        className="flex items-center justify-center rounded-lg bg-[#ff6b3d] text-white hover:bg-[#ff4d00] transition-all duration-300 px-2 py-1.5 sm:px-3 sm:py-2"
                                         aria-label="Close"
                                         title="Close (Esc)"
                                     >
-                                        <X size={isMobile ? 16 : 18} />
+                                        <X size={isMobile ? 16 : 20} />
+                                        <span className="ml-1.5 hidden sm:inline text-sm">Close</span>
                                     </button>
                                 </div>
                             </div>

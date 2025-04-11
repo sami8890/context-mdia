@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Sparkles, ChevronDown, ChevronUp, Info, Link } from "lucide-react";
+import { Check, X, Sparkles,  Info, Link } from "lucide-react";
 
 interface PricingFeature {
   title: string;
@@ -323,27 +323,7 @@ export default function PricingSection() {
           ))}
         </div>
 
-        {/* Feature comparison toggle */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex justify-center mb-8"
-        >
-          <button
-            onClick={handleToggleFeatures}
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-white text-sm transition-all duration-300"
-          >
-            {showFeatureComparison ? "Hide" : "Show"} detailed feature
-            comparison
-            {showFeatureComparison ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </button>
-        </motion.div>
+        
 
         {/* Feature comparison table */}
         <AnimatePresence>
