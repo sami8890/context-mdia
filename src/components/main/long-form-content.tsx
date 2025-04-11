@@ -21,7 +21,6 @@ import {
     SkipForward,
     List,
 } from "lucide-react"
-import Image from "next/image"
 
 // Define proper TypeScript interfaces
 interface Video {
@@ -549,7 +548,7 @@ const VideoCard = ({
     const cardRef = useRef<HTMLDivElement>(null)
     const isInView = useInView(cardRef, { once: true, amount: 0.3 })
     const [, setIsMobile] = useState(false)
-    const [isActive, ] = useState(false)
+    const [isActive] = useState(false)
 
     // Handle touch events for mobile
     useEffect(() => {
@@ -660,11 +659,9 @@ const VideoCard = ({
             >
                 {/* Video thumbnail preview using YouTube thumbnail */}
                 <div className="absolute inset-0">
-                    <Image
+                    <img
                         src={`https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`}
                         alt={video.title}
-                        width={1280}
-                        height={720}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         onError={(e) => {
                             // Fallback to gradient background if image fails to load

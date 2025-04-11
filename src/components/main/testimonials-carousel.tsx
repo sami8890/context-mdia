@@ -38,7 +38,7 @@ export default function TestimonialsCarousel() {
       quote:
         "Context Media transformed our content strategy. Our engagement increased by 300% and revenue doubled in just 3 months!",
       video: "/ww.jpg",
-      youtubeId: "dQw4w9WgXcQ", // Replace with your actual YouTube video ID
+      youtubeId: "dQw4w9WgXcQ", 
     },
     {
       name: "Michael Chen",

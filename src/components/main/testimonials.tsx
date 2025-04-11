@@ -15,12 +15,9 @@ import {
     X,
     Info,
     Share2,
-    Search,
-    Filter,
     Clock,
     ExternalLink,
 } from "lucide-react"
-import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useMobile } from "@/lib/use-mobile"
 
@@ -115,9 +112,6 @@ const testimonials = [
     },
 ]
 
-// Get all unique categories
-const allCategories = ["All", ...Array.from(new Set(testimonials.map((t) => t.category || "Other")))]
-
 // Progress bar component for video playback
 const ProgressBar = ({ progress = 0 }: { progress: number }) => {
     return (
@@ -208,7 +202,6 @@ const TestimonialCard = ({
     onClose,
     isMuted,
     setIsMuted,
-    priority = false,
 }: TestimonialCardProps) => {
     const cardRef = useRef<HTMLDivElement>(null)
     const videoRef = useRef<HTMLDivElement>(null)
@@ -421,17 +414,14 @@ const TestimonialCard = ({
                                 <div className="w-8 h-8 border-4 border-[#ff6b3d]/30 border-t-[#ff6b3d] rounded-full animate-spin"></div>
                             </div>
                         )}
-                        <Image
+                        <img
                             src={testimonial.thumbnail || "/placeholder.svg"}
                             alt={`Testimonial from ${testimonial.name}`}
-                            fill
                             className={cn(
-                                "object-cover transition-transform duration-700",
+                                "absolute inset-0 w-full h-full object-cover transition-transform duration-700",
                                 isHovered ? "scale-105" : "scale-100",
                                 imageLoaded ? "opacity-100" : "opacity-0",
                             )}
-                            sizes="(max-width: 768px) 100vw, 500px"
-                            priority={priority}
                             onLoad={() => setImageLoaded(true)}
                         />
                     </>
@@ -804,23 +794,7 @@ export default function VideoTestimonials() {
     const [currentIndex, setCurrentIndex] = useState(0)
     const isMobile = useMobile()
     const [showAllTestimonials, setShowAllTestimonials] = useState(false)
-    const [searchQuery, setSearchQuery] = useState("")
-    const [selectedCategory, setSelectedCategory] = useState("All")
-    const [isSearchOpen, setIsSearchOpen] = useState(false)
-
-    // Filter testimonials based on search and category
-    const filteredTestimonials = testimonials.filter((testimonial) => {
-        const matchesSearch =
-            searchQuery === "" ||
-            testimonial.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            testimonial.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            testimonial.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (testimonial.description && testimonial.description.toLowerCase().includes(searchQuery.toLowerCase()))
-
-        const matchesCategory = selectedCategory === "All" || testimonial.category === selectedCategory
-
-        return matchesSearch && matchesCategory
-    })
+    const filteredTestimonials = testimonials
 
     // Calculate visible items based on screen size
     const getVisibleItems = () => {
@@ -868,8 +842,6 @@ export default function VideoTestimonials() {
                 case "Escape":
                     if (showAllTestimonials) {
                         setShowAllTestimonials(false)
-                    } else if (isSearchOpen) {
-                        setIsSearchOpen(false)
                     } else {
                         setActiveVideoId(null)
                     }
@@ -883,34 +855,14 @@ export default function VideoTestimonials() {
                     }
                     break
                 case "a": // "a" for "all"
-                    if (!isSearchOpen) {
-                        setShowAllTestimonials(!showAllTestimonials)
-                    }
-                    break
-                case "s": // "s" for "search"
-                    if (!showAllTestimonials && !activeVideoId) {
-                        setIsSearchOpen(!isSearchOpen)
-                        if (!isSearchOpen) {
-                            setTimeout(() => {
-                                document.getElementById("testimonial-search")?.focus()
-                            }, 100)
-                        }
-                    }
+                    setShowAllTestimonials(!showAllTestimonials)
                     break
             }
         }
 
         window.addEventListener("keydown", handleKeyDown)
         return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [
-        handleNext,
-        handlePrev,
-        activeVideoId,
-        currentIndex,
-        showAllTestimonials,
-        isSearchOpen,
-        filteredTestimonials.length,
-    ])
+    }, [handleNext, handlePrev, activeVideoId, currentIndex, showAllTestimonials, filteredTestimonials.length])
 
     // Animation controls
     useEffect(() => {
@@ -918,11 +870,6 @@ export default function VideoTestimonials() {
             controls.start("visible")
         }
     }, [controls, inView])
-
-    // Reset current index when filters change
-    useEffect(() => {
-        setCurrentIndex(0)
-    }, [selectedCategory, searchQuery])
 
     return (
         <section className="relative w-full py-20 md:py-32 px-4 md:px-8 lg:px-16 bg-[#0c0c0c] overflow-hidden" ref={ref}>
@@ -993,109 +940,7 @@ export default function VideoTestimonials() {
                     >
                         Hear directly from our clients about their transformative experiences
                     </motion.p>
-
-                    {/* Search and filter controls */}
-                    <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4">
-                        {/* Category filter */}
-                        <div className="relative">
-                            <motion.div
-                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 cursor-pointer"
-                                whileHover={{ backgroundColor: "rgba(255, 107, 61, 0.1)" }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                <Filter className="h-4 w-4 text-[#ff6b3d]" />
-                                <select
-                                    className="bg-transparent text-white text-sm appearance-none focus:outline-none cursor-pointer"
-                                    value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                    aria-label="Filter by category"
-                                >
-                                    {allCategories.map((category) => (
-                                        <option key={category} value={category} className="bg-gray-900 text-white">
-                                            {category}
-                                        </option>
-                                    ))}
-                                </select>
-                            </motion.div>
-                        </div>
-
-                        {/* Search input */}
-                        <AnimatePresence>
-                            {isSearchOpen ? (
-                                <motion.div
-                                    className="relative"
-                                    initial={{ width: 40, opacity: 0 }}
-                                    animate={{ width: "100%", maxWidth: "300px", opacity: 1 }}
-                                    exit={{ width: 40, opacity: 0 }}
-                                >
-                                    <input
-                                        id="testimonial-search"
-                                        type="text"
-                                        placeholder="Search testimonials..."
-                                        className="w-full px-4 py-2 pl-10 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white text-sm focus:outline-none focus:border-[#ff6b3d]/50 focus:ring-1 focus:ring-[#ff6b3d]/50"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                    />
-                                    <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                                    <button
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                                        onClick={() => {
-                                            setSearchQuery("")
-                                            setIsSearchOpen(false)
-                                        }}
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                </motion.div>
-                            ) : (
-                                <motion.button
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white text-sm"
-                                    whileHover={{ backgroundColor: "rgba(255, 107, 61, 0.1)" }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => setIsSearchOpen(true)}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                >
-                                    <Search className="h-4 w-4 text-[#ff6b3d]" />
-                                    <span>Search</span>
-                                </motion.button>
-                            )}
-                        </AnimatePresence>
-                    </div>
                 </motion.div>
-
-                {/* No results message */}
-                {filteredTestimonials.length === 0 && (
-                    <motion.div
-                        className="text-center py-12 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 mb-16"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        <motion.div
-                            className="text-[#ff6b3d] text-5xl mb-4"
-                            animate={{ rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                        >
-                            🔍
-                        </motion.div>
-                        <h3 className="text-white text-xl font-bold mb-2">No testimonials found</h3>
-                        <p className="text-gray-400 max-w-md mx-auto">
-                            Try adjusting your search or filter criteria to find what yo&apos;re looking for.
-                        </p>
-                        <motion.button
-                            className="mt-6 px-6 py-2 rounded-full bg-[#ff6b3d] text-white font-medium hover:bg-[#ff4d00] transition-colors"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => {
-                                setSearchQuery("")
-                                setSelectedCategory("All")
-                                setIsSearchOpen(false)
-                            }}
-                        >
-                            Reset Filters
-                        </motion.button>
-                    </motion.div>
-                )}
 
                 {/* Testimonial Row with Navigation */}
                 {filteredTestimonials.length > 0 && (
@@ -1227,7 +1072,7 @@ export default function VideoTestimonials() {
                             className="text-center mt-4 text-gray-500 text-sm"
                         >
                             <span className="hidden md:inline-block">
-                                Use arrow keys to navigate • Space to play/pause • &apos;a&apos; to view all • &apos;s&apos; to search
+                                Use arrow keys to navigate • Space to play/pause • &apos;a&apos; to view all
                             </span>
                         </motion.div>
                     </div>
@@ -1280,228 +1125,119 @@ export default function VideoTestimonials() {
                         >
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-2xl md:text-3xl font-bold text-white">All Client Testimonials</h2>
-
-                                <div className="flex items-center gap-4">
-                                    {/* Search in modal */}
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            placeholder="Search testimonials..."
-                                            className="w-full md:w-64 px-4 py-2 pl-10 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white text-sm focus:outline-none focus:border-[#ff6b3d]/50 focus:ring-1 focus:ring-[#ff6b3d]/50"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                        />
-                                        <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                                    </div>
-
-                                    <button
-                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-black/60 text-white hover:bg-[#ff6b3d]/80 transition-colors"
-                                        onClick={() => setShowAllTestimonials(false)}
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                </div>
+                                <button
+                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-black/60 text-white hover:bg-[#ff6b3d]/80 transition-colors"
+                                    onClick={() => setShowAllTestimonials(false)}
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
                             </div>
 
-                            {/* Category filters */}
-                            <div className="flex flex-wrap gap-2 mb-6">
-                                {allCategories.map((category) => (
-                                    <motion.button
-                                        key={category}
-                                        className={cn(
-                                            "px-3 py-1 rounded-full text-sm font-medium transition-colors",
-                                            selectedCategory === category
-                                                ? "bg-[#ff6b3d] text-white"
-                                                : "bg-white/5 text-gray-300 hover:bg-white/10",
-                                        )}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => setSelectedCategory(category)}
-                                    >
-                                        {category}
-                                    </motion.button>
-                                ))}
-                            </div>
-
-                            {filteredTestimonials.length === 0 ? (
-                                <div className="text-center py-12">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[70vh]">
+                                {filteredTestimonials.map((testimonial, index) => (
                                     <motion.div
-                                        className="text-[#ff6b3d] text-5xl mb-4"
-                                        animate={{ rotate: [0, 10, -10, 0] }}
-                                        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                                    >
-                                        🔍
-                                    </motion.div>
-                                    <h3 className="text-white text-xl font-bold mb-2">No testimonials found</h3>
-                                    <p className="text-gray-400 max-w-md mx-auto">
-                                        Try adjusting your search or filter criteria to find what you&apos;re looking for.
-                                    </p>
-                                    <motion.button
-                                        className="mt-6 px-6 py-2 rounded-full bg-[#ff6b3d] text-white font-medium hover:bg-[#ff4d00] transition-colors"
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
+                                        key={testimonial.id}
+                                        className="relative aspect-video rounded-lg overflow-hidden cursor-pointer group"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                                        whileHover={{ scale: 1.03 }}
                                         onClick={() => {
-                                            setSearchQuery("")
-                                            setSelectedCategory("All")
+                                            setShowAllTestimonials(false)
+                                            setTimeout(() => {
+                                                handleVideoPlay(testimonial.id)
+                                            }, 300)
                                         }}
                                     >
-                                        Reset Filters
-                                    </motion.button>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[70vh]">
-                                    {filteredTestimonials.map((testimonial, index) => (
-                                        <motion.div
-                                            key={testimonial.id}
-                                            className="relative aspect-video rounded-lg overflow-hidden cursor-pointer group"
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3, delay: index * 0.05 }}
-                                            whileHover={{ scale: 1.03 }}
-                                            onClick={() => {
-                                                setShowAllTestimonials(false)
-                                                setTimeout(() => {
-                                                    handleVideoPlay(testimonial.id)
-                                                }, 300)
-                                            }}
-                                        >
-                                            <Image
-                                                src={testimonial.thumbnail || "/placeholder.svg"}
-                                                alt={`Testimonial from ${testimonial.name}`}
-                                                fill
-                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                                sizes="(max-width: 768px) 100vw, 500px"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30 group-hover:via-black/40"></div>
+                                        <img
+                                            src={testimonial.thumbnail || "/placeholder.svg"}
+                                            alt={`Testimonial from ${testimonial.name}`}
+                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30 group-hover:via-black/40"></div>
 
-                                            {/* Category badge */}
-                                            {testimonial.category && (
-                                                <div className="absolute top-3 right-3">
-                                                    <div className="px-2 py-1 bg-[#ff6b3d]/90 rounded-full text-xs font-medium text-white shadow-md">
-                                                        {testimonial.category}
-                                                    </div>
+                                        {/* Category badge */}
+                                        {testimonial.category && (
+                                            <div className="absolute top-3 right-3">
+                                                <div className="px-2 py-1 bg-[#ff6b3d]/90 rounded-full text-xs font-medium text-white shadow-md">
+                                                    {testimonial.category}
                                                 </div>
-                                            )}
+                                            </div>
+                                        )}
 
-                                            <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff6b3d] to-[#ff4d00] flex items-center justify-center text-white">
-                                                        <User className="h-4 w-4" />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-white text-sm font-bold">{testimonial.name}</h4>
-                                                        <p className="text-gray-300 text-xs truncate max-w-[150px]">{testimonial.role}</p>
-                                                    </div>
+                                        <div className="absolute inset-0 p-4 flex flex-col justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff6b3d] to-[#ff4d00] flex items-center justify-center text-white">
+                                                    <User className="h-4 w-4" />
                                                 </div>
-
                                                 <div>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <span className="text-xs text-white bg-black/60 px-2 py-0.5 rounded-full">
-                                                            {testimonial.company}
-                                                        </span>
-                                                        {testimonial.duration && (
-                                                            <span className="text-xs text-white flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-full">
-                                                                <Clock className="h-3 w-3" />
-                                                                {testimonial.duration}
-                                                            </span>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Play button */}
-                                                    <motion.div
-                                                        className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-[#ff6b3d] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                    >
-                                                        <Play className="h-5 w-5 text-white fill-white ml-0.5" />
-                                                    </motion.div>
-
-                                                    {/* Rating stars if available */}
-                                                    {testimonial.rating && (
-                                                        <div className="absolute bottom-4 left-4">
-                                                            <div className="flex">
-                                                                {Array.from({ length: testimonial.rating }).map((_, i) => (
-                                                                    <span key={i} className="text-[#ff6b3d] text-xs">
-                                                                        ★
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                    <h4 className="text-white text-sm font-bold">{testimonial.name}</h4>
+                                                    <p className="text-gray-300 text-xs truncate max-w-[150px]">{testimonial.role}</p>
                                                 </div>
                                             </div>
 
-                                            {/* Hover overlay with description preview */}
-                                            {testimonial.description && (
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-xs text-white bg-black/60 px-2 py-0.5 rounded-full">
+                                                        {testimonial.company}
+                                                    </span>
+                                                    {testimonial.duration && (
+                                                        <span className="text-xs text-white flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-full">
+                                                            <Clock className="h-3 w-3" />
+                                                            {testimonial.duration}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Play button */}
                                                 <motion.div
-                                                    className="absolute inset-0 bg-black/80 p-4 flex flex-col justify-center items-center text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                                    initial={{ opacity: 0 }}
-                                                    whileHover={{ opacity: 1 }}
+                                                    className="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-[#ff6b3d] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
                                                 >
-                                                    <p className="text-white text-sm line-clamp-4">{testimonial.description}</p>
-                                                    <motion.span
-                                                        className="mt-4 text-[#ff6b3d] text-xs font-medium"
-                                                        initial={{ y: 10, opacity: 0 }}
-                                                        whileHover={{ y: 0, opacity: 1 }}
-                                                        transition={{ delay: 0.2 }}
-                                                    >
-                                                        Click to watch
-                                                    </motion.span>
+                                                    <Play className="h-5 w-5 text-white fill-white ml-0.5" />
                                                 </motion.div>
-                                            )}
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            )}
+
+                                                {/* Rating stars if available */}
+                                                {testimonial.rating && (
+                                                    <div className="absolute bottom-4 left-4">
+                                                        <div className="flex">
+                                                            {Array.from({ length: testimonial.rating }).map((_, i) => (
+                                                                <span key={i} className="text-[#ff6b3d] text-xs">
+                                                                    ★
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Hover overlay with description preview */}
+                                        {testimonial.description && (
+                                            <motion.div
+                                                className="absolute inset-0 bg-black/80 p-4 flex flex-col justify-center items-center text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                                initial={{ opacity: 0 }}
+                                                whileHover={{ opacity: 1 }}
+                                            >
+                                                <p className="text-white text-sm line-clamp-4">{testimonial.description}</p>
+                                                <motion.span
+                                                    className="mt-4 text-[#ff6b3d] text-xs font-medium"
+                                                    initial={{ y: 10, opacity: 0 }}
+                                                    whileHover={{ y: 0, opacity: 1 }}
+                                                    transition={{ delay: 0.2 }}
+                                                >
+                                                    Click to watch
+                                                </motion.span>
+                                            </motion.div>
+                                        )}
+                                    </motion.div>
+                                ))}
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {/* Enhanced keyboard shortcuts help */}
-            <div className="fixed bottom-4 right-4 z-40 opacity-0 hover:opacity-100 transition-opacity duration-300">
-                <div className="bg-black/80 backdrop-blur-sm text-white text-xs p-4 rounded-lg shadow-lg border border-white/10">
-                    <h4 className="font-bold mb-2 text-[#ff6b3d]">Keyboard Shortcuts</h4>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">←</kbd>
-                            <span>Previous</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">→</kbd>
-                            <span>Next</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">Space</kbd>
-                            <span>Play/Pause</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">f</kbd>
-                            <span>Fullscreen</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">i</kbd>
-                            <span>Info</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">m</kbd>
-                            <span>Mute/Unmute</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">a</kbd>
-                            <span>View all</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">s</kbd>
-                            <span>Search</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <kbd className="px-2 py-1 bg-gray-800 rounded text-gray-300">Esc</kbd>
-                            <span>Close</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </section>
     )
 }
