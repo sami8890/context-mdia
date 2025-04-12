@@ -5,7 +5,6 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { motion, useAnimation, useInView } from "framer-motion"
 import { Check, Sparkles, Info, Star, Rocket, Crown, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 interface PricingTier {
   name: string
@@ -254,7 +253,6 @@ export default function PricingSection() {
           ))}
         </div>
 
-        {/* FAQ or additional info */}
       
       </div>
 
