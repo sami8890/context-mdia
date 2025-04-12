@@ -255,29 +255,7 @@ export default function PricingSection() {
         </div>
 
         {/* FAQ or additional info */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={controls}
-          variants={{
-            visible: { opacity: 1, y: 0 },
-            hidden: { opacity: 0, y: 20 },
-          }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-16 text-center"
-        >
-          <div className="inline-block p-4 bg-[#0f0f0f]/80 backdrop-blur-sm rounded-xl border border-white/10">
-            <h3 className="text-white font-semibold mb-2">Ready to elevate your content strategy?</h3>
-            <p className="text-gray-400 text-sm mb-4">
-              Our team of expert video creators is ready to help you stand out in the digital landscape.
-            </p>
-            <Button
-              onClick={openCalendly}
-              className="bg-gradient-to-r from-[#ff6b3d] to-[#ff4d00] hover:shadow-lg hover:shadow-[#ff6b3d]/20 border-none"
-            >
-              Schedule a Free Consultation
-            </Button>
-          </div>
-        </motion.div>
+      
       </div>
 
       {/* Calendly Modal */}
