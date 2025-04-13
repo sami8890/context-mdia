@@ -284,7 +284,7 @@ export default function Navbar() {
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
 
-                     
+
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -309,32 +309,6 @@ export default function Navbar() {
                               </Link>
                             </div>
                           </div>
-
-                          <div>
-                            <h4 className="text-gray-300 text-sm font-medium mb-3 uppercase tracking-wide">
-                              Follow Me
-                            </h4>
-                            <div className="flex space-x-3">
-                              <a
-                                href="#"
-                                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#ff6b3d] hover:text-white transition-all"
-                              >
-                                <Twitter className="h-4 w-4" />
-                              </a>
-                              <a
-                                href="#"
-                                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#ff6b3d] hover:text-white transition-all"
-                              >
-                                <Linkedin className="h-4 w-4" />
-                              </a>
-                              <a
-                                href="#"
-                                className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#ff6b3d] hover:text-white transition-all"
-                              >
-                                <Instagram className="h-4 w-4" />
-                              </a>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -353,7 +327,8 @@ export default function Navbar() {
                       </p>
                       <Button
                         variant="outline"
-                        className="w-full border-gray-700 hover:border-[#ff6b3d] text-white hover:text-[#ff6b3d] rounded-md"
+                        className="w-full border-gray-700 hover:border-[#ff6b3d] text-black hover:text-[#ff6b3d] rounded-md"
+                        id="contact"
                       >
                         Contact Support
                       </Button>
