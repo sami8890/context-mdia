@@ -219,12 +219,7 @@ export default function ShortFormContent() {
   }
 
   // Toggle videos per page between 3 and 6
-  const toggleVideosPerPage = () => {
-    setActiveVideoIndex(null) // Stop any playing video
-    setVideosPerPage(videosPerPage === 3 ? 6 : 3)
-    setCurrentPage(0) // Reset to first page
-  }
-
+ 
   return (
     <section className="w-full py-16 px-4 bg-[#0c0c0c]">
       <div className="container mx-auto max-w-6xl px-4">
