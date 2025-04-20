@@ -7,62 +7,35 @@ import { useMobile } from "@/lib/use-mobile"
 // Update the shortFormVideos array to have clearer titles and consistent formatting
 const shortFormVideos = [
   {
-    title: "YouTube Short",
     videoId: "0oJu3eWKpEg",
-    tag: "New",
-    author: "Ahmad Tiasan",
-    duration: "0:30",
     platform: "youtube",
   },
   {
-    title: "Featured Short",
     videoId: "wP7ISAAu6SU",
-    tag: "Featured",
-    author: "Ahmad Tiasan",
-    duration: "0:25",
     platform: "youtube",
   },
   {
-    title: "Why 95% Fail",
+    
     videoId: "Kgm05VpjJ5A",
-    tag: "Series 2",
-    author: "Ahmad Tiasan",
-    duration: "0:15",
     platform: "youtube",
   },
   {
-    title: "Harmful Chemicals\nin Diapers",
-    videoId: "QRGHneSqbkA",
-    tag: "Health",
-    author: "Ahmad Tiasan",
-    duration: "0:30",
+    videoId: "QRGHneSqbkA",    
     platform: "youtube",
   },
   {
-    title: "Make It Happen",
     videoId: "1q5t0rCIkfk",
-    tag: "Motivation",
-    author: "Ahmad Tiasan",
-    duration: "0:22",
     platform: "youtube",
   },
   {
-    title: "The Sad Truth",
     videoId: "Oqj3xlJWzrs",
-    tag: "Reality",
-    author: "Ahmad Tiasan",
-    duration: "0:18",
     platform: "youtube",
   },
 ]
 
 interface VideoItemProps {
   video: {
-    title: string
     videoId: string
-    tag: string
-    author: string
-    duration: string
     platform: string
   }
   index: number
@@ -124,7 +97,7 @@ const VideoItem = ({ video, index, onPlay, isPlaying }: VideoItemProps) => {
           <div className="absolute inset-0 overflow-hidden">
             <img
               src={`https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`}
-              alt={video.title}
+              alt="Video thumbnail"
               className="w-full h-full object-cover transition-transform duration-700 ease-in-out"
               style={{
                 transform: isHovered ? "scale(1.1)" : "scale(1)",
@@ -154,18 +127,14 @@ const VideoItem = ({ video, index, onPlay, isPlaying }: VideoItemProps) => {
       {/* Tag badge */}
       {!isPlaying && (
         <div className="absolute top-3 left-3 z-30">
-          <span className="px-2 py-1 bg-[#ff6b3d] text-white text-xs font-medium rounded-full">{video.tag}</span>
         </div>
       )}
 
       {/* Title overlay */}
       {!isPlaying && (
         <div className="absolute left-0 right-0 bottom-0 p-3 z-30">
-          <h3 className="text-white text-lg font-bold">{video.title}</h3>
           <div className="flex items-center mt-1">
-            <p className="text-white/80 text-sm">{video.author}</p>
             <span className="mx-2 text-white/40">•</span>
-            <p className="text-white/80 text-sm">{video.duration}</p>
           </div>
         </div>
       )}
