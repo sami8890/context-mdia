@@ -2,319 +2,255 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
-import {
-  Play,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 
-// Define types
-type Testimonial = {
+// Simple testimonial type
+interface Testimonial {
   id: string;
-  name: string;
-  role: string;
   videoId: string;
-  thumbnail: string;
-};
+}
 
-type TestimonialCardProps = {
-  testimonial: Testimonial;
-  isActive: boolean;
-  onPlay: () => void;
-  onClose: () => void;
-  isMuted: boolean;
-  setIsMuted: (muted: boolean) => void;
-};
-
-// Testimonial data with YouTube IDs
+// Sample testimonials
 const testimonials = [
   {
     id: "1",
-    name: "Client Testimonial 1",
-    role: "Satisfied Customer",
     videoId: "TK1Zd3rJhmQ",
-    thumbnail: `https://i.ytimg.com/vi/TK1Zd3rJhmQ/hqdefault.jpg`,
   },
   {
     id: "2",
-    name: "Client Testimonial 2",
-    role: "Satisfied Customer",
     videoId: "EDdMIA5piBw",
-    thumbnail: `https://i.ytimg.com/vi/EDdMIA5piBw/hqdefault.jpg`,
   },
   {
     id: "3",
-    name: "Client Testimonial 3",
-    role: "Satisfied Customer",
     videoId: "QoihxtDAGi4",
-    thumbnail: `https://i.ytimg.com/vi/QoihxtDAGi4/hqdefault.jpg`,
   },
 ];
 
-// Loading spinner component
-const LoadingSpinner = () => (
-  <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
-    <div className="w-8 h-8 border-4 border-[#ff6b3d]/30 border-t-[#ff6b3d] rounded-full animate-spin"></div>
-  </div>
-);
+// Video Modal Component
+const VideoModal = ({ testimonial, isOpen, onClose }: { testimonial: Testimonial | null; isOpen: boolean; onClose: () => void }) => {
+  const modalRef = useRef(null);
 
-// Testimonial Video Card Component
-const TestimonialCard = ({
-  testimonial,
-  isActive,
-  onPlay,
-  isMuted,
-}: TestimonialCardProps) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const isInView = useInView(cardRef, { once: true, amount: 0.2 });
-
-  // Load YouTube video when active
+  // Close on escape key
   useEffect(() => {
-    if (!videoRef.current || !isActive) return;
-
-    // Remove any existing iframe
-    if (videoRef.current.querySelector("iframe")) {
-      const iframe = videoRef.current.querySelector("iframe");
-      if (iframe) {
-        iframe.remove();
-      }
-      setVideoLoaded(false);
-    }
-
-    // Create YouTube iframe
-    const iframe = document.createElement("iframe");
-    iframe.src = `https://www.youtube.com/embed/${
-      testimonial.videoId
-    }?autoplay=1&mute=${
-      isMuted ? 1 : 0
-    }&controls=1&modestbranding=1&rel=0&playsinline=1`;
-    iframe.allow =
-      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen";
-    iframe.setAttribute("allowfullscreen", "true");
-    iframe.className = "absolute inset-0 w-full h-full z-10";
-    iframe.style.border = "0";
-    iframe.onload = () => setVideoLoaded(true);
-
-    // Append the iframe to the container
-    videoRef.current.appendChild(iframe);
-
-    return () => {
-      if (videoRef.current?.querySelector("iframe")) {
-        const iframe = videoRef.current.querySelector("iframe");
-        if (iframe) {
-          iframe.remove();
-        }
-        setVideoLoaded(false);
-      }
+    const handleKeydown = (e: { key: string; }) => {
+      if (e.key === "Escape") onClose();
     };
-  }, [isActive, testimonial.videoId, isMuted]);
+
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, [onClose]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!testimonial || !isOpen) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        ref={modalRef}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: "spring", damping: 25 }}
+        className="relative w-full max-w-5xl aspect-video bg-black rounded-lg overflow-hidden shadow-2xl border border-white/10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <iframe
+          src={`https://www.youtube.com/embed/${testimonial.videoId}?autoplay=1&rel=0&modestbranding=1`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          className="w-full h-full"
+          frameBorder="0"
+          allowFullScreen
+        ></iframe>
+
+        {/* Close button at top-right */}
+        <div className="absolute top-4 right-4 z-10">
+          <button
+            onClick={onClose}
+            className="bg-black/50 hover:bg-black/70 text-white w-8 h-8 flex items-center justify-center rounded-full backdrop-blur-sm"
+            aria-label="Close video"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// Testimonial Card Component
+const TestimonialCard = ({ testimonial, index, onPlay }: { testimonial: Testimonial; index: number; onPlay: (testimonial: Testimonial) => void }) => {
+  const cardRef = useRef(null);
+  const isInView = useInView(cardRef, { once: true, amount: 0.3 });
 
   return (
     <motion.div
       ref={cardRef}
-      className="relative overflow-hidden transition-all duration-300 aspect-video w-full rounded-xl shadow-lg"
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.5 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.4, delay: index * 0.1 }}
+      className="group"
     >
-      {/* Video container */}
       <div
-        ref={videoRef}
-        className="absolute inset-0 bg-black rounded-xl overflow-hidden"
+        className="relative aspect-video overflow-hidden rounded-lg cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
+        onClick={() => onPlay(testimonial)}
+        role="button"
+        tabIndex={0}
       >
-        {/* Thumbnail */}
-        {!isActive && (
-          <>
-            {!imageLoaded && (
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-[#ff6b3d]/30 border-t-[#ff6b3d] rounded-full animate-spin"></div>
-              </div>
-            )}
-            <img
-              src={testimonial.thumbnail || "/placeholder.svg"}
-              alt={`Testimonial from ${testimonial.name}`}
-              className={cn(
-                "absolute inset-0 w-full h-full object-cover transition-transform duration-500",
-                isHovered ? "scale-105" : "scale-100",
-                imageLoaded ? "opacity-100" : "opacity-0"
-              )}
-              onLoad={() => setImageLoaded(true)}
-            />
-          </>
-        )}
+        <img
+          src={`https://i.ytimg.com/vi/${testimonial.videoId}/hqdefault.jpg`}
+          alt={`Testimonial video`}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-70 group-hover:opacity-60 transition-opacity"></div>
 
-        {/* Gradient overlay */}
-        {!isActive && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30"></div>
-        )}
-
-        {/* Video loading animation */}
-        {isActive && !videoLoaded && <LoadingSpinner />}
-      </div>
-
-      {/* Content overlay */}
-      <div className="absolute inset-0 p-4 flex flex-col justify-between z-20">
-        {/* Play button for inactive cards */}
-        {!isActive && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <button
-              onClick={onPlay}
-              className="w-14 h-14 rounded-full bg-[#ff6b3d]/90 flex items-center justify-center shadow-lg"
-              aria-label="Play"
-            >
-              <Play className="h-7 w-7 text-white fill-white ml-1" />
-            </button>
+        {/* Play button and text overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-[#ff6b3d] flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
+            <Play className="h-6 w-6 text-white fill-white ml-1" />
           </div>
-        )}
+        </div>
       </div>
     </motion.div>
   );
 };
 
+// Main Component
 export default function VideoTestimonials() {
   const ref = useRef(null);
-  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
 
-  // Calculate visible items based on screen size
-  const getVisibleItems = () => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth < 768 ? 1 : 3;
-    }
-    return 3;
+  const itemsPerPage = typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : 3;
+  const pageCount = Math.ceil(testimonials.length / itemsPerPage);
+
+  // Handle testimonial selection
+  const handlePlayTestimonial = useCallback((testimonial: Testimonial | null) => {
+    setSelectedTestimonial(testimonial);
+    setIsModalOpen(true);
+  }, []);
+
+  // Close modal
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedTestimonial(null), 300);
+  }, []);
+
+  // Navigation handlers
+  const handlePrevPage = useCallback(() => {
+    setCurrentPage((prev) => Math.max(0, prev - 1));
+  }, []);
+
+  const handleNextPage = useCallback(() => {
+    setCurrentPage((prev) => Math.min(pageCount - 1, prev + 1));
+  }, [pageCount]);
+
+  // Get current items
+  const getCurrentItems = () => {
+    const start = currentPage * itemsPerPage;
+    return testimonials.slice(start, start + itemsPerPage);
   };
 
-  const [visibleItems, setVisibleItems] = useState(3);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setVisibleItems(getVisibleItems());
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const maxIndex = Math.max(0, testimonials.length - visibleItems);
-
-  // Handle navigation
-  const handlePrev = useCallback(() => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
-    setActiveVideoId(null);
-  }, []);
-
-  const handleNext = useCallback(() => {
-    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
-    setActiveVideoId(null);
-  }, [maxIndex]);
-
-  // Handle video play/pause
-  const handleVideoPlay = useCallback((id: string) => {
-    setActiveVideoId(id);
-  }, []);
-
-  // Handle video close
-  const handleVideoClose = useCallback(() => {
-    setActiveVideoId(null);
-  }, []);
-
   return (
-    <section className="relative w-full py-16 px-4 bg-[#0c0c0c]" ref={ref}>
+    <section
+      ref={ref}
+      className="w-full py-16 px-4 md:px-8 lg:px-16 bg-[#0c0c0c]"
+      aria-label="Client testimonials section"
+    >
       <div className="container mx-auto max-w-6xl">
-        {/* Section header */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="text-white">Client </span>
-            <span className="text-[#ff6b3d]">Testimonials</span>
+            <span className="bg-gradient-to-r from-[#ff6b3d] to-[#ff4d00] text-transparent bg-clip-text">
+              Testimonials
+            </span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
             Hear directly from our clients about their experiences
           </p>
-        </div>
+        </motion.div>
 
-        {/* Testimonial Row with Navigation */}
-        <div className="relative mb-8">
+        {/* Navigation and testimonials */}
+        <div className="relative">
           {/* Navigation buttons */}
-          <div className="flex justify-between absolute -left-4 -right-4 top-1/2 -translate-y-1/2 z-30 pointer-events-none">
-            <button
-              className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg pointer-events-auto",
-                currentIndex > 0
-                  ? "bg-[#ff6b3d]"
-                  : "bg-gray-800/50 cursor-not-allowed"
-              )}
-              onClick={handlePrev}
-              disabled={currentIndex === 0}
-              aria-label="Previous testimonials"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-
-            <button
-              className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg pointer-events-auto",
-                currentIndex < maxIndex
-                  ? "bg-[#ff6b3d]"
-                  : "bg-gray-800/50 cursor-not-allowed"
-              )}
-              onClick={handleNext}
-              disabled={currentIndex >= maxIndex}
-              aria-label="Next testimonials"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Testimonial cards row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials
-              .slice(currentIndex, currentIndex + visibleItems)
-              .map((testimonial) => (
-                <TestimonialCard
-                  key={testimonial.id}
-                  testimonial={testimonial}
-                  isActive={activeVideoId === testimonial.id}
-                  onPlay={() => handleVideoPlay(testimonial.id)}
-                  onClose={handleVideoClose}
-                  isMuted={isMuted}
-                  setIsMuted={setIsMuted}
-                />
-              ))}
-          </div>
-
-          {/* Pagination indicators */}
-          <div className="flex justify-center mt-6 gap-2">
-            {Array.from({
-              length: Math.ceil(testimonials.length / visibleItems),
-            }).map((_, index) => (
+          {pageCount > 1 && (
+            <div className="absolute -left-4 -right-4 top-1/2 -translate-y-1/2 flex justify-between z-10 pointer-events-none">
               <button
-                key={index}
-                className={cn(
-                  "h-2 rounded-full transition-all duration-300",
-                  index === Math.floor(currentIndex / visibleItems)
-                    ? "bg-[#ff6b3d] w-8"
-                    : "bg-gray-700 w-2"
-                )}
-                onClick={() => {
-                  setCurrentIndex(index * visibleItems);
-                  setActiveVideoId(null);
-                }}
-                aria-label={`Go to page ${index + 1}`}
+                onClick={handlePrevPage}
+                disabled={currentPage === 0}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg pointer-events-auto ${currentPage === 0 ? 'bg-gray-700/50 cursor-not-allowed' : 'bg-[#ff6b3d] hover:bg-[#ff5a2c]'} `}
+                aria-label="Previous testimonials"
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage >= pageCount - 1}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg pointer-events-auto ${currentPage >= pageCount - 1 ? 'bg-gray-700/50 cursor-not-allowed' : 'bg-[#ff6b3d] hover:bg-[#ff5a2c]'}`}
+                aria-label="Next testimonials"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
+
+          {/* Testimonial cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {getCurrentItems().map((testimonial, index) => (
+              <TestimonialCard
+                key={testimonial.id}
+                testimonial={testimonial}
+                index={index}
+                onPlay={handlePlayTestimonial}
               />
             ))}
           </div>
+
+          {/* Pagination indicators */}
+          {pageCount > 1 && (
+            <div className="flex justify-center mt-6 gap-2">
+              {Array.from({ length: pageCount }).map((_, index) => (
+                <button
+                  key={index}
+                  className={`h-2 rounded-full transition-all duration-300 ${index === currentPage ? 'bg-[#ff6b3d] w-8' : 'bg-gray-700 w-2'}`}
+                  onClick={() => setCurrentPage(index)}
+                  aria-label={`Go to page ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Video modal */}
+      <VideoModal
+        testimonial={selectedTestimonial}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </section>
   );
 }
