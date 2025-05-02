@@ -24,7 +24,7 @@ const pricingTiers: PricingTier[] = [
     name: "Starter Plan",
     emoji: "🌱",
     icon: <Star className="h-6 w-6 text-[#4ade80]" />,
-    price: 900,
+    price: 600,
     description: "Best for Beginners",
     features: [
       "15 Reels (short-form videos)",
@@ -41,7 +41,7 @@ const pricingTiers: PricingTier[] = [
     name: "Growth Plan",
     emoji: "🚀",
     icon: <Rocket className="h-6 w-6 text-[#ff6b3d]" />,
-    price: 2000,
+    price: 1500,
     description: "Designed for creators ready to grow across platforms",
     features: [
       "30 Reels (short-form videos)",
@@ -62,7 +62,7 @@ const pricingTiers: PricingTier[] = [
     name: "Elite Creator Plan",
     emoji: "👑",
     icon: <Crown className="h-6 w-6 text-[#fbbf24]" />,
-    price: 4000,
+    price: 3000,
     description: "High-End Package for Authority Building",
     features: [
       "Onboarding Call (1st Month)",

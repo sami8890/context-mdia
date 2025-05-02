@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/navbar";
 import { useState, useEffect } from "react";
-import ContextMediaLoader from "@/app/loading"; 
-import { Analytics } from "@vercel/analytics/react"
+import ContextMediaLoader from "@/app/loading";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +15,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
 
 export default function RootLayout({
   children,
@@ -45,7 +44,7 @@ export default function RootLayout({
           <>
             <Navbar />
             {children}
-             <Analytics />
+            <Analytics />
           </>
         )}
       </body>
