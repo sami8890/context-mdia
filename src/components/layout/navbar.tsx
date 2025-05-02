@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, Mail, Phone, Twitter, Linkedin, Instagram, ArrowRight } from "lucide-react"
+import { Menu, X, Mail, Phone, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
@@ -139,10 +139,7 @@ export default function Navbar() {
             {isMenuOpen ? (
               <X className="h-6 w-6" />
             ) : (
-              <>
-                <Menu className="h-6 w-6" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#ff6b3d] rounded-full"></span>
-              </>
+              <Menu className="h-6 w-6" />
             )}
           </Button>
         </div>
@@ -195,7 +192,7 @@ export default function Navbar() {
                     </button>
                   </div>
 
-                  {/* Mobile: Contact Info Second */}
+                  {/* Mobile: Contact Info */}
                   <div className="bg-gradient-to-br from-[#1a1a1a] to-[#232323] p-6 rounded-lg border border-gray-800/50">
                     <div className="mb-6">
                       <h3 className="text-white text-xl font-bold mb-2">We help you go viral with our expertise</h3>
@@ -231,41 +228,13 @@ export default function Navbar() {
                         </a>
                       </div>
                     </div>
-
-                    <div>
-                      <h4 className="text-gray-300 text-sm font-medium mb-3 uppercase tracking-wide">Follow Me</h4>
-                      <div className="flex space-x-3">
-                        <a
-                          href="#"
-                          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#ff6b3d] hover:text-white transition-all"
-                        >
-                          <Twitter className="h-4 w-4" />
-                        </a>
-                        <a
-                          href="#"
-                          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#ff6b3d] hover:text-white transition-all"
-                        >
-                          <Linkedin className="h-4 w-4" />
-                        </a>
-                        <a
-                          href="#"
-                          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#ff6b3d] hover:text-white transition-all"
-                        >
-                          <Instagram className="h-4 w-4" />
-                        </a>
-                      </div>
-                    </div>
                   </div>
                 </div>
               ) : (
                 /* Desktop: Only Contact Info in an Enhanced Design */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {/* Desktop: Enhanced Contact Section */}
                   <div className="lg:col-span-2">
                     <div className="bg-gradient-to-br from-[#1a1a1a] to-[#232323] p-8 rounded-lg border border-gray-800/50 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[#ff6b3d]/10 blur-[80px] rounded-full"></div>
-                      <div className="absolute bottom-0 left-0 w-1/4 h-1/4 bg-[#ff4d00]/10 blur-[60px] rounded-full"></div>
-
                       <div className="relative z-10">
                         <h3 className="text-white text-2xl md:text-3xl font-bold mb-3">
                           We help you go viral with our expertise
@@ -283,8 +252,6 @@ export default function Navbar() {
                             BOOK A CALL NOW
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
-
-
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -313,27 +280,6 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
-
-                  <div className="hidden lg:block">
-                    <div className="bg-[#1a1a1a] p-8 rounded-lg border border-gray-800/50 h-full flex flex-col justify-center">
-                      <div className="text-center mb-6">
-                        <span className="inline-block p-3 bg-[#ff6b3d]/10 rounded-full mb-4">
-                          <Phone className="h-6 w-6 text-[#ff6b3d]" />
-                        </span>
-                        <h4 className="text-white text-lg font-medium">Need immediate help?</h4>
-                      </div>
-                      <p className="text-gray-400 text-sm text-center mb-6">
-                        Our team is available Monday to Friday, 9am to 5pm
-                      </p>
-                      <Button
-                        variant="outline"
-                        className="w-full border-gray-700 hover:border-[#ff6b3d] text-black hover:text-[#ff6b3d] rounded-md"
-                        id="contact"
-                      >
-                        Contact Support
-                      </Button>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
@@ -343,4 +289,3 @@ export default function Navbar() {
     </header>
   )
 }
-
