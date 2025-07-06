@@ -118,6 +118,15 @@ export default function Navbar() {
           >
             Contact
           </button>
+            <button
+            onClick={() => scrollToSection("pricing")}
+            className={cn(
+              "text-sm font-medium transition-colors",
+              activeSection === "contact" ? "text-[#ff6b3d]" : "text-white hover:text-[#ff6b3d]",
+            )}
+          >
+            Pricing
+          </button>
         </nav>
 
         <div className="flex items-center gap-4 z-20">

@@ -69,9 +69,7 @@ export default function ServicesSection() {
 
                             <div className="flex justify-between items-start mb-4">
                                 <span className="text-[#ff6b3d] text-lg font-bold">{service.number}</span>
-                                <button className="w-8 h-8 rounded-full bg-[#ff6b3d]/10 flex items-center justify-center text-[#ff6b3d] group-hover:bg-[#ff6b3d] group-hover:text-white transition-all duration-300">
-                                    <ArrowRight className="h-4 w-4" />
-                                </button>
+                               
                             </div>
 
                             <h3 className="text-white text-xl font-bold mb-2">{service.title}</h3>

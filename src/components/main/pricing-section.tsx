@@ -17,6 +17,7 @@ interface PricingTier {
   badge?: string
   ctaText: string
   note?: string
+
 }
 
 const pricingTiers: PricingTier[] = [
@@ -24,18 +25,18 @@ const pricingTiers: PricingTier[] = [
     name: "Starter Plan",
     emoji: "🌱",
     icon: <Star className="h-6 w-6 text-[#4ade80]" />,
-    price: 600,
+    price: 500,
     description: "Best for Beginners",
     features: [
       "15 Reels (short-form videos)",
       "Personalized Video Branding",
       "Engaging animations & motion graphics",
       "Subtitles/Captions",
-      "Monthly Performance Overview",
+      "Monthly video strategy meeting Quick turnarounds (24-48 hours)",
     ],
-    note: "No scripting or content ideation included.",
     ctaText: "Book a Call",
     badge: "Best for Beginners",
+    
   },
   {
     name: "Growth Plan",
@@ -51,11 +52,10 @@ const pricingTiers: PricingTier[] = [
       "4 Long-form videos (YouTube, Facebook, etc.)",
       "High-quality video editing with animations & motion graphics",
       "Subtitles/Captions",
-      "Weekly Performance Report + Adjustments",
+      "Monthly video strategy meeting Quick turnarounds (24-48 hours)",
     ],
     highlighted: true,
     badge: "Most Popular",
-    note: "No scripting or content ideation included.",
     ctaText: "Book a Call",
   },
   {
@@ -73,11 +73,11 @@ const pricingTiers: PricingTier[] = [
       "Clean, Professional Video Editing",
       "Engaging animations & motion graphics",
       "Subtitles/Captions",
-      "Weekly Performance Reports + Strategic Adjustments",
+      "Monthly video strategy meeting Quick turnarounds (24-48 hours)",
     ],
     badge: "Authority Building",
-    note: "No scripting or content ideation included.",
     ctaText: "Book a Call",
+
   },
 ]
 

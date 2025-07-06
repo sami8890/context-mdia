@@ -81,18 +81,8 @@ export default function Hero() {
           </h2>
 
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mb-12 text-sm text-gray-400">
-            <div className="flex items-center">
-              <CheckCircle className="h-4 w-4 mr-2 text-[#ff6b3d]" />
-              <span>Professional Editing</span>
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="h-4 w-4 mr-2 text-[#ff6b3d]" />
-              <span>Content Strategy</span>
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="h-4 w-4 mr-2 text-[#ff6b3d]" />
-              <span>Growth Marketing</span>
-            </div>
+           
+           
           </div>
         </motion.div>
 
@@ -103,10 +93,10 @@ export default function Hero() {
           className="flex flex-col sm:flex-row gap-5 justify-center"
         >
           <Button
-            className="group bg-gradient-to-r from-[#ff6b3d] to-[#ff4d00] hover:opacity-90 text-white rounded-full px-10 py-7 text-lg shadow-lg shadow-[#ff6b3d]/10 font-medium relative overflow-hidden"
+            className="group bg-gradient-to-r from-[#ff6b3d] to-[#ff4d00] hover:opacity-90 text-white rounded-full px-10 py-7 text-lg shadow-lg shadow-[#ff6b3d]/10 font-medium relative overflow-hidden w-full lg:w-1/3"
             asChild
           >
-            <Link href="#contact" className="flex items-center">
+            <Link href="#contact" className="flex items-center justify-center">
               <span className="relative z-10">Book Call</span>
               <ArrowRight className="ml-2 h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
               <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
@@ -115,19 +105,16 @@ export default function Hero() {
 
           <Button
             variant="outline"
-            className="group text-white hover:text-[#ff6b3d] border border-gray-700 hover:border-[#ff6b3d] rounded-full px-8 py-7 text-lg bg-[#ffffff0a] backdrop-blur-sm hover:bg-[#ffffff0f]"
+            className="group text-white hover:text-[#ff6b3d] border border-gray-700 hover:border-[#ff6b3d] rounded-full px-8 py-7 text-lg bg-[#ffffff0a] backdrop-blur-sm hover:bg-[#ffffff0f] w-full lg:w-1/3"
             asChild
           >
-            <Link href="#services" className="flex items-center">
+            <Link href="#services" className="flex items-center justify-center">
               <span>Learn More</span>
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </Button>
         </motion.div>
       </div>
-
-     
     </section>
   )
 }
-
