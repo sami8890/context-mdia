@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, CheckCircle } from "lucide-react"
-import { motion } from "framer-motion"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight,  } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Hero() {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
-    return null
+    return null;
   }
 
   return (
@@ -65,7 +65,12 @@ export default function Hero() {
                 viewBox="0 0 200 8"
                 preserveAspectRatio="none"
               >
-                <path d="M0,5 C50,0 150,0 200,5" stroke="currentColor" strokeWidth="3" fill="none" />
+                <path
+                  d="M0,5 C50,0 150,0 200,5"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  fill="none"
+                />
               </svg>
             </span>
           </h1>
@@ -77,13 +82,11 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <h2 className="text-xl md:text-2xl lg:text-3xl text-gray-300 font-light mb-8 max-w-3xl mx-auto text-center leading-relaxed">
-            Turning Your Views into <span className="font-medium text-white">Paying Customers</span> on Autopilot
+            Turning Your Views into{" "}
+            <span className="font-medium text-white">Paying Customers</span> on
+            Autopilot
           </h2>
-
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mb-12 text-sm text-gray-400">
-           
-           
-          </div>
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mb-12 text-sm text-gray-400"></div>
         </motion.div>
 
         <motion.div
@@ -116,5 +119,5 @@ export default function Hero() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
