@@ -5,14 +5,14 @@ import { motion } from "framer-motion"
 const services = [
     {
         number: "01",
-        title: "YouTube & LinkedIn videos  ",
+        title: "YouTube Videos ",
         description: "YouTube videos made more engaging than ever for longer watch time and more subscribers.",
         icon: "/placeholder.svg?height=40&width=40",
     },
     {
         number: "02",
         title: "Short Form Videos",
-        description: "Nail your Reels, TikToks and YouTube shorts to optimize engagement and shareability.",
+        description: "Nail your Reels, TikToks and YouTube shorts & LinkedIn videos to optimize engagement and shareability.",
         icon: "/placeholder.svg?height=40&width=40",
     },
     {
