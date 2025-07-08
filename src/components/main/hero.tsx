@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight,  } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Hero() {
@@ -93,27 +93,27 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col sm:flex-row gap-5 justify-center"
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-lg mx-auto"
         >
           <Button
-            className="group bg-gradient-to-r from-[#ff6b3d] to-[#ff4d00] hover:opacity-90 text-white rounded-full px-10 py-7 text-lg shadow-lg shadow-[#ff6b3d]/10 font-medium relative overflow-hidden w-full lg:w-1/3"
+            className="group relative bg-gradient-to-r from-[#ff6b3d] to-[#ff4d00] hover:from-[#ff5722] hover:to-[#e64100] text-white rounded-full px-8 py-3.5 text-base font-semibold shadow-xl shadow-[#ff6b3d]/25 hover:shadow-[#ff6b3d]/40 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto min-w-[180px]"
             asChild
           >
-            <Link href="#contact" className="flex items-center justify-center">
+            <Link href="#contact" className="flex items-center justify-center gap-2">
               <span className="relative z-10">Book Call</span>
-              <ArrowRight className="ml-2 h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-              <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+              <ArrowRight className="h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
+              <div className="absolute inset-0 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
           </Button>
 
           <Button
             variant="outline"
-            className="group text-white hover:text-[#ff6b3d] border border-gray-700 hover:border-[#ff6b3d] rounded-full px-8 py-7 text-lg bg-[#ffffff0a] backdrop-blur-sm hover:bg-[#ffffff0f] w-full lg:w-1/3"
+            className="group relative text-white hover:text-[#ff6b3d] border-2 border-gray-600/50 hover:border-[#ff6b3d] rounded-full px-8 py-3.5 text-base font-semibold bg-black/20 backdrop-blur-md hover:bg-[#ff6b3d]/5 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto min-w-[180px]"
             asChild
           >
-            <Link href="#services" className="flex items-center justify-center">
+            <Link href="#services" className="flex items-center justify-center gap-2">
               <span>Learn More</span>
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 group-hover:text-[#ff6b3d] transition-all duration-300" />
             </Link>
           </Button>
         </motion.div>

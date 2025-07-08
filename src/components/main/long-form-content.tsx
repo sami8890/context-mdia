@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { motion, useAnimation, useInView, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 // Simple Video interface
 interface Video {
@@ -144,10 +145,12 @@ const VideoCard = ({ video, index, onVideoSelect }: { video: Video; index: numbe
                 role="button"
                 tabIndex={0}
             >
-                <img
+                <Image
                     src={`https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`}
                     alt="Video thumbnail"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    width={1280}
+                    height={720}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-70 group-hover:opacity-60 transition-opacity"></div>
 
